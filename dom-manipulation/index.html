@@ -1,34 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Quote Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    #quoteDisplay {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      min-height: 50px;
+    }
+    input, select, button {
+      margin: 5px;
+      padding: 8px;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>✨ Dynamic Quote Generator ✨</h1>
 
-  <!-- Display Random Quote -->
-  <div id="quoteDisplay" style="margin-bottom: 1em; font-size: 1.2em;"></div>
-  <button id="newQuote">🎲 Show New Quote</button>
 
-  <!-- Add New Quote -->
-  <h2>Add Your Own Quote</h2>
-  <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-  <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-  <button onclick="addQuote()">➕ Add Quote</button>
+  <h1>Dynamic Quote Generator</h1>
 
-  <!-- Filter By Category -->
-  <h2>Filter by Category</h2>
-  <select id="categoryFilter" onchange="filterQuote()">
-    <option value="all">All Categories</option>
-  </select>
 
-  <!-- Import / Export JSON -->
-  <h2>Import / Export Quotes</h2>
-  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-  <button onclick="exportToJsonFile()">📤 Export Quotes</button>
+  <div id="quoteDisplay"></div>
 
-  <script src="script.js"></script>
+
+  <div>
+    <select id="categoryFilter">
+      <option value="all">All Categories</option>
+    </select>
+    <button id="newQuote">Show New Quote</button>
+    <button id="syncButton">Sync with Server</button>
+  </div>
+
+
+  <div id="formContainer"></div>
+
+
+  <div>
+    <button id="exportButton">Export Quotes</button>
+    <input type="file" id="importFile" accept=".json">
+    <script src="script.js"></script>
+  </div>
 </body>
 </html>
