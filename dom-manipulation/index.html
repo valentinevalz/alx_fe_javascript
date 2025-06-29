@@ -1,34 +1,707 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dynamic Quote Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quote Generator</title>
+    <!-- Using Tailwind CSS for beautiful styling, like magic paint! -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS to make our app look even nicer, like adding sparkly glitter! */
+        body {
+            font-family: 'Inter', sans-serif; /* A nice, readable font */
+            background-color: #f0f4f8; /* A soft, light blue-gray background */
+            color: #333; /* Dark gray text */
+            display: flex;
+            flex-direction: column; /* Arrange things in a column */
+            align-items: center; /* Center everything horizontally */
+            padding: 20px; /* Space around the edges */
+            min-height: 100vh; /* Make sure the body takes at least the full height of the screen */
+        }
+        .container {
+            background-color: #fff; /* White background for the main content box */
+            padding: 30px;
+            border-radius: 12px; /* Nicely rounded corners */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); /* A soft shadow to make it pop */
+            max-width: 700px; /* Don't let it get too wide */
+            width: 100%; /* Take full width on small screens */
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #2d3748; /* Darker gray for headings */
+            text-align: center; /* Center the text */
+            margin-bottom: 25px; /* Space below headings */
+        }
+        button, .file-upload-label {
+            background-color: #4c51bf; /* A lovely purple-blue color for buttons */
+            color: white; /* White text on buttons */
+            padding: 12px 20px;
+            border-radius: 8px; /* Rounded button corners */
+            border: none; /* No ugly borders */
+            cursor: pointer; /* Change cursor to a hand when hovering */
+            transition: background-color 0.3s ease; /* Smooth color change on hover */
+            margin: 5px; /* Space between buttons */
+            display: inline-flex; /* Use flex to align content for label */
+            align-items: center; /* Center text vertically */
+            justify-content: center; /* Center text horizontally */
+        }
+        button:hover, .file-upload-label:hover {
+            background-color: #5a67d8; /* A slightly lighter purple-blue on hover */
+        }
+        input[type="text"], textarea, select {
+            border: 1px solid #cbd5e0; /* Light gray border for input fields */
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%; /* Take full width of their container */
+            box-sizing: border-box; /* Include padding in width calculation */
+            margin-bottom: 15px; /* Space below input fields */
+        }
+        textarea {
+            min-height: 80px; /* Minimum height for textarea */
+            resize: vertical; /* Allow vertical resizing */
+        }
+        .quote-item {
+            background-color: #f7fafc; /* Very light gray for individual quote boxes */
+            border-left: 4px solid #4c51bf; /* A blue border on the left side */
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            position: relative; /* Needed for positioning the remove button */
+        }
+        .quote-text {
+            font-size: 1.1em; /* Slightly larger text for the quote */
+            font-style: italic; /* Make it italic */
+            color: #4a5568; /* Darker gray for quote text */
+        }
+        .quote-author {
+            text-align: right; /* Align author name to the right */
+            margin-top: 5px; /* Space above author */
+            font-size: 0.9em; /* Slightly smaller text for author */
+            color: #718096; /* Medium gray for author */
+        }
+        .quote-category {
+            font-size: 0.8em; /* Even smaller text for category */
+            color: #a0aec0; /* Lighter gray for category */
+        }
+        .remove-quote-btn {
+            background-color: #e53e3e; /* Red for the remove button */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: absolute; /* Position relative to the quote-item */
+            top: 10px; /* 10px from the top */
+            right: 10px; /* 10px from the right */
+            font-size: 0.8em;
+        }
+        .remove-quote-btn:hover {
+            background-color: #c53030; /* Darker red on hover */
+        }
+        #messageArea {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        .text-green-600 { color: #38a169; } /* Green for success messages */
+        .text-red-600 { color: #e53e3e; } /* Red for error messages */
+        .sync-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .sync-success { background-color: #d1fae5; color: #065f46; } /* Light green for sync success */
+        .sync-info { background-color: #e0f2fe; color: #0369a1; } /* Light blue for sync info */
+        .sync-error { background-color: #fee2e2; color: #dc2626; } /* Light red for sync error */
+
+        /* Hide the default file input button, let the label handle the click */
+        .file-upload-label input[type="file"] {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <h1>✨ Dynamic Quote Generator ✨</h1>
+    <div class="container">
+        <h1>✨ Dynamic Quote Generator ✨</h1>
 
-  <!-- Display Random Quote -->
-  <div id="quoteDisplay" style="margin-bottom: 1em; font-size: 1.2em;"></div>
-  <button id="newQuote">🎲 Show New Quote</button>
+        <!-- Display Random Quote -->
+        <div id="quoteDisplay" class="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg text-center min-h-[100px] flex flex-col justify-center items-center">
+            <p class="quote-text text-xl font-semibold">"Click 'Show New Quote' to get started!"</p>
+            <p class="quote-author text-lg mt-2">- App Instructions</p>
+            <p class="quote-category text-sm mt-1">Category: Welcome</p>
+        </div>
+        <div class="flex flex-wrap justify-center mb-6 gap-4">
+            <button id="newQuote" class="flex-1 min-w-[150px]">🎲 Show New Quote</button>
+            <select id="categoryFilter" class="flex-1 min-w-[150px] max-w-xs p-3 rounded-lg border border-gray-300" onchange="filterQuotes()">
+                <option value="all">All Categories</option>
+                <!-- Categories will be populated here by JavaScript magic! -->
+            </select>
+        </div>
 
-  <!-- Add New Quote -->
-  <h2>Add Your Own Quote</h2>
-  <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-  <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-  <button onclick="addQuote()">➕ Add Quote</button>
+        <!-- Add New Quote Section -->
+        <div id="addQuoteFormContainer" class="mb-8 p-5 border border-gray-200 rounded-lg shadow-sm">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Your Own Quote</h2>
+            <div class="mb-4">
+                <label for="newQuoteText" class="block text-sm font-medium text-gray-700 mb-1">Quote:</label>
+                <textarea id="newQuoteText" placeholder="Enter a new quote"
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 h-24 resize-y"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="newQuoteAuthor" class="block text-sm font-medium text-gray-700 mb-1">Author:</label>
+                <input id="newQuoteAuthor" type="text" placeholder="Who said it?"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="mb-4">
+                <label for="newQuoteCategory" class="block text-sm font-medium text-gray-700 mb-1">Category:</label>
+                <input id="newQuoteCategory" type="text" placeholder="Enter quote category"
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button id="addQuoteBtn"
+                    class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold
+                           hover:bg-blue-700 transition duration-300 ease-in-out
+                           shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                ➕ Add Quote
+            </button>
+        </div>
 
-  <!-- Filter By Category -->
-  <h2>Filter by Category</h2>
-  <select id="categoryFilter" onchange="filterQuotes()">
-    <option value="all">All Categories</option>
-  </select>
+        <!-- Import / Export JSON -->
+        <h2 class="text-2xl font-semibold text-gray-700 mb-4">Import / Export Quotes</h2>
+        <div class="flex flex-wrap justify-center mb-8 gap-4">
+            <label for="importFile" class="file-upload-label flex-1 min-w-[150px] text-center">
+                Import Quotes (JSON)
+                <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)">
+            </label>
+            <button id="exportQuotesBtn" class="flex-1 min-w-[150px]" onclick="exportQuotes()">📤 Export Quotes</button>
+        </div>
 
-  <!-- Import / Export JSON -->
-  <h2>Import / Export Quotes</h2>
-  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-  <button onclick="exportQuotes()">📤 Export Quotes</button>
+        <!-- This is where all our quotes will be listed, like a big table of contents! -->
+        <h2 class="text-2xl font-semibold text-gray-700 mb-4">All Stored Quotes</h2>
+        <div id="allQuotesDisplay" class="space-y-4">
+            <!-- All quotes will be listed here, filtered or not. -->
+            <p class="text-gray-500 text-center" id="noQuotesMessage">No quotes yet! Add some above.</p>
+        </div>
 
-  <script src="script.js"></script>
+        <!-- This is a little message area for our messenger bird to tell us what's happening -->
+        <div id="syncStatus" class="sync-info mt-8 hidden">
+            <!-- Sync status messages will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables and Setup ---
+        // This is our main list of quotes, like all the notes in our notebook!
+        let quotes = [];
+        // Unique keys for our memory boxes (local storage and session storage)
+        const LOCAL_STORAGE_KEY = 'dynamicQuoteGeneratorQuotes';
+        const SESSION_STORAGE_KEY_LAST_VIEWED = 'dynamicQuoteGeneratorLastViewedQuote';
+        const SESSION_STORAGE_KEY_LAST_FILTER = 'dynamicQuoteGeneratorLastFilter';
+
+        // Get references to all the important parts of our web page.
+        const quoteDisplay = document.getElementById('quoteDisplay');
+        const newQuoteBtn = document.getElementById('newQuote');
+        const addQuoteBtn = document.getElementById('addQuoteBtn'); // Direct reference to the add button
+        const exportQuotesBtn = document.getElementById('exportQuotesBtn');
+        const importFile = document.getElementById('importFile');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const allQuotesDisplay = document.getElementById('allQuotesDisplay');
+        const syncStatus = document.getElementById('syncStatus');
+        const noQuotesMessage = document.getElementById('noQuotesMessage');
+
+        // --- Helper Functions ---
+
+        /**
+         * Shows a temporary message to the user on the screen.
+         * Like a little speech bubble that pops up and then disappears.
+         * @param {string} msg - The message to show.
+         * @param {string} type - 'success', 'error', or 'info' for different colors.
+         */
+        function showMessage(msg, type = 'info') {
+            syncStatus.textContent = msg;
+            syncStatus.className = 'sync-status'; // Reset classes
+            syncStatus.classList.remove('hidden'); // Make sure it's visible
+
+            if (type === 'success') {
+                syncStatus.classList.add('sync-success');
+            } else if (type === 'error') {
+                syncStatus.classList.add('sync-error');
+            } else {
+                syncStatus.classList.add('sync-info');
+            }
+
+            // Make the message disappear after a few seconds
+            setTimeout(() => {
+                syncStatus.classList.add('hidden');
+            }, 5000); // Hide after 5 seconds
+        }
+
+        // --- Core Data Management (Task 1) ---
+
+        /**
+         * Saves our list of quotes to the browser's local storage.
+         * This is like writing all our notes into our permanent memory box.
+         */
+        function saveQuotes() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(quotes));
+            console.log('Quotes saved to local storage.');
+        }
+
+        /**
+         * Loads quotes from the browser's local storage when the page starts.
+         * This is like opening our permanent memory box and reading all our saved notes.
+         */
+        function loadQuotes() {
+            const storedQuotes = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (storedQuotes) {
+                try {
+                    // We turn the special text code back into our JavaScript list.
+                    quotes = JSON.parse(storedQuotes);
+                    console.log('Quotes loaded from local storage:', quotes);
+                } catch (e) {
+                    console.error("Error parsing quotes from local storage:", e);
+                    quotes = []; // Start with an empty list if there's an error
+                }
+            } else {
+                // If no quotes are stored, initialize with some defaults.
+                quotes = [
+                    { id: crypto.randomUUID(), text: "Keep moving forward!", author: "Unknown", category: "Motivation" },
+                    { id: crypto.randomUUID(), text: "Eat. Sleep. Code. Repeat.", author: "Programmer's Mantra", category: "Coding" },
+                    { id: crypto.randomUUID(), text: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "Inspiration" },
+                    { id: crypto.randomUUID(), text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", category: "Innovation" },
+                    { id: crypto.randomUUID(), text: "Life is what happens when you're busy making other plans.", author: "John Lennon", category: "Life" }
+                ];
+                saveQuotes(); // Save these initial quotes
+            }
+        }
+
+        /**
+         * Saves the last viewed quote to session storage.
+         * This is like writing down the last thing you looked at in a temporary notepad.
+         * This data only stays until you close the browser tab.
+         * @param {object} quote - The quote object to save.
+         */
+        function saveLastViewedQuote(quote) {
+            sessionStorage.setItem(SESSION_STORAGE_KEY_LAST_VIEWED, JSON.stringify(quote));
+            console.log('Last viewed quote saved to session storage.');
+        }
+
+        /**
+         * Loads the last viewed quote from session storage.
+         * This is like checking your temporary notepad for the last thing you saw.
+         * @returns {object|null} The last viewed quote or null if not found.
+         */
+        function loadLastViewedQuote() {
+            const lastViewed = sessionStorage.getItem(SESSION_STORAGE_KEY_LAST_VIEWED);
+            if (lastViewed) {
+                try {
+                    return JSON.parse(lastViewed);
+                } catch (e) {
+                    console.error("Error parsing last viewed quote from session storage:", e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // --- Task 0: Dynamic Content Generation & DOM Manipulation ---
+
+        /**
+         * Displays a single quote in the main quote display area.
+         * This is like putting a specific drawing into our big picture frame.
+         * @param {object} quote - The quote object to display.
+         */
+        function displayQuote(quote) {
+            if (!quote) {
+                quoteDisplay.innerHTML = `
+                    <p class="quote-text text-xl font-semibold">"No quotes found for this category. Try adding one!"</p>
+                    <p class="quote-author text-lg mt-2">- App Message</p>
+                    <p class="quote-category text-sm mt-1">Category: N/A</p>
+                `;
+                return;
+            }
+            quoteDisplay.innerHTML = `
+                <p class="quote-text text-xl font-semibold">"${quote.text}"</p>
+                <p class="quote-author text-lg mt-2">- ${quote.author || 'Unknown'}</p> <!-- Display author, default to 'Unknown' -->
+                <p class="quote-category text-sm mt-1">Category: ${quote.category}</p>
+            `;
+            saveLastViewedQuote(quote); // Save to session storage
+        }
+
+        /**
+         * Selects and displays a random quote from the currently filtered list.
+         * This is like randomly picking a drawing from our drawing pile.
+         */
+        function displayRandomQuote() { // Renamed from showRandomQuote to match user's code
+            const filteredQuotes = getFilteredQuotes(); // Get quotes based on current filter
+            if (filteredQuotes.length === 0) {
+                displayQuote(null); // Show message if no quotes match filter
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+            displayQuote(filteredQuotes[randomIndex]);
+            // Always update the full list display as well
+            displayAllQuotes();
+        }
+
+        /**
+         * Adds a new quote from the input fields to our `quotes` array and saves it.
+         * This is like writing a new note and putting it in our notebook.
+         */
+        function addQuote() {
+            // Get the values from the input fields
+            const newQuoteText = document.getElementById('newQuoteText').value.trim();
+            const newQuoteAuthor = document.getElementById('newQuoteAuthor').value.trim();
+            const newQuoteCategory = document.getElementById('newQuoteCategory').value.trim();
+
+            if (!newQuoteText || !newQuoteAuthor || !newQuoteCategory) {
+                showMessage('Please fill in all fields (quote, author, category).', 'error');
+                return;
+            }
+
+            // Create a unique ID for this new quote.
+            const newQuote = {
+                id: crypto.randomUUID(), // `crypto.randomUUID()` generates a unique identifier
+                text: newQuoteText,
+                author: newQuoteAuthor,
+                category: newQuoteCategory
+            };
+
+            quotes.push(newQuote); // Add the new quote to our list
+            saveQuotes(); // Save the updated list to local storage
+
+            // Clear the input fields for the next quote
+            document.getElementById('newQuoteText').value = '';
+            document.getElementById('newQuoteAuthor').value = '';
+            document.getElementById('newQuoteCategory').value = '';
+
+            showMessage('Quote added successfully!', 'success');
+
+            populateCategories(); // Update the categories dropdown in case of a new category
+            filterQuotes(); // Re-display quotes, applying current filter or showing new quote
+        }
+
+        /**
+         * Displays all quotes in the 'All Stored Quotes' section, based on the current filter.
+         */
+        function displayAllQuotes() {
+            allQuotesDisplay.innerHTML = ''; // Clear previous list
+            const filteredQuotes = getFilteredQuotes();
+
+            if (filteredQuotes.length === 0) {
+                noQuotesMessage.classList.remove('hidden');
+                allQuotesDisplay.appendChild(noQuotesMessage); // Re-append it if it was removed
+                return;
+            } else {
+                noQuotesMessage.classList.add('hidden');
+            }
+
+            filteredQuotes.forEach(quote => {
+                const quoteItemDiv = document.createElement('div');
+                quoteItemDiv.classList.add('quote-item');
+                quoteItemDiv.dataset.id = quote.id; // Store the ID on the element for easy removal
+
+                quoteItemDiv.innerHTML = `
+                    <p class="quote-text">"${quote.text}"</p>
+                    <p class="quote-author">- ${quote.author || 'Unknown'}</p>
+                    <p class="quote-category">Category: ${quote.category}</p>
+                    <button class="remove-quote-btn" data-id="${quote.id}">X</button>
+                `;
+
+                // Add event listener for the dynamically created remove button
+                const removeBtn = quoteItemDiv.querySelector('.remove-quote-btn');
+                removeBtn.addEventListener('click', (event) => removeQuote(event.target.dataset.id));
+
+                allQuotesDisplay.appendChild(quoteItemDiv);
+            });
+        }
+
+        /**
+         * Removes a quote by its ID from the `quotes` array and updates storage/display.
+         * @param {string} idToRemove - The unique ID of the quote to remove.
+         */
+        function removeQuote(idToRemove) {
+            // Keep only the quotes whose IDs do NOT match the one we want to remove.
+            quotes = quotes.filter(quote => quote.id !== idToRemove);
+            saveQuotes(); // Save the updated list to local storage
+            showMessage('Quote removed successfully!', 'error');
+            populateCategories(); // Re-populate categories in case a category became empty
+            filterQuotes(); // Update the displayed lists
+        }
+
+
+        // --- Task 1: JSON Data Import and Export ---
+
+        /**
+         * Exports all current quotes to a JSON file and prompts the user to download it.
+         */
+        function exportQuotes() { // Function name from user's code
+            if (quotes.length === 0) {
+                showMessage('No quotes to export!', 'info');
+                return;
+            }
+            const dataStr = JSON.stringify(quotes, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "quotes.json";
+            link.click();
+            URL.revokeObjectURL(url);
+            showMessage('Quotes exported successfully!', 'success');
+        }
+
+        /**
+         * Imports quotes from a JSON file selected by the user.
+         * @param {Event} event - The file input change event.
+         */
+        function importFromJsonFile(event) { // Function name from user's code
+            const file = event.target.files[0];
+            if (!file) {
+                showMessage('No file selected.', 'info');
+                return;
+            }
+
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const importedQuotes = JSON.parse(e.target.result);
+                    if (Array.isArray(importedQuotes)) {
+                        const existingQuotesSet = new Set(quotes.map(q => `${q.text}|${q.author}|${q.category}`));
+                        const newQuotesToAdd = [];
+
+                        importedQuotes.forEach(impQuote => {
+                            // Ensure imported quotes have an ID, assign if missing
+                            impQuote.id = impQuote.id || crypto.randomUUID();
+                            const uniqueIdentifier = `${impQuote.text}|${impQuote.author || ''}|${impQuote.category}`; // Include author in unique check
+
+                            if (!existingQuotesSet.has(uniqueIdentifier)) {
+                                newQuotesToAdd.push(impQuote);
+                                existingQuotesSet.add(uniqueIdentifier);
+                            }
+                        });
+
+                        if (newQuotesToAdd.length > 0) {
+                            quotes.push(...newQuotesToAdd);
+                            saveQuotes();
+                            populateCategories();
+                            filterQuotes(); // Refresh display using the combined filter/display logic
+                            showMessage(`${newQuotesToAdd.length} quotes imported successfully!`, 'success');
+                        } else {
+                            showMessage('No new unique quotes found in the file to import.', 'info');
+                        }
+
+                    } else {
+                        showMessage("Invalid JSON format. Expected an array of quotes.", 'error');
+                    }
+                } catch (error) {
+                    console.error("Error importing quotes:", error);
+                    showMessage('Failed to import quotes. Make sure it\'s a valid JSON file.', 'error');
+                }
+            };
+            fileReader.readAsText(file);
+        }
+
+        // --- Task 2: Dynamic Content Filtering System ---
+
+        /**
+         * Extracts unique categories from our `quotes` list and populates the category filter dropdown.
+         */
+        function populateCategories() { // Function name from user's code
+            const select = document.getElementById("categoryFilter");
+            // Store the current selected value before clearing options
+            const selectedValue = select.value;
+
+            // Get all unique categories from our quotes and sort them alphabetically
+            const categories = [...new Set(quotes.map(quote => quote.category))].sort();
+
+            // Clear previous options in the dropdown, but keep "All Categories"
+            select.innerHTML = `<option value="all">All Categories</option>`;
+
+            // Add each unique category as an option in the dropdown
+            categories.forEach(category => {
+                const option = document.createElement("option");
+                option.value = category;
+                option.text = category;
+                select.appendChild(option);
+            });
+
+            // Restore the last selected value after populating options
+            select.value = selectedValue;
+        }
+
+        /**
+         * Filters the main `quotes` list based on the selected category in the dropdown.
+         * Then it updates the displayed quotes.
+         */
+        function getFilteredQuotes() {
+            const selectedCategory = categoryFilter.value;
+            // Save the selected filter to session storage so it's remembered
+            sessionStorage.setItem(SESSION_STORAGE_KEY_LAST_FILTER, selectedCategory);
+
+            if (selectedCategory === 'all') {
+                return quotes; // If "All Categories" is selected, show all quotes
+            } else {
+                // Otherwise, filter quotes to only show those matching the selected category
+                return quotes.filter(quote => quote.category === selectedCategory);
+            }
+        }
+
+        /**
+         * Updates both the main quote display (random quote) and the "All Stored Quotes" list
+         * based on the currently selected filter.
+         */
+        function filterQuotes() { // Function name from user's code
+            // The `getFilteredQuotes` function already handles saving the selection.
+            // This function primarily orchestrates the display updates.
+            displayRandomQuote(); // Update the main display
+            displayAllQuotes();   // Update the list of all quotes
+        }
+
+        /**
+         * Restores the last selected category filter from session storage when the page loads.
+         */
+        function restoreLastCategory() { // Function name from user's code
+            const lastFilter = sessionStorage.getItem(SESSION_STORAGE_KEY_LAST_FILTER);
+            if (lastFilter) {
+                categoryFilter.value = lastFilter;
+            }
+            filterQuotes(); // Apply the loaded filter immediately
+        }
+
+        // --- Task 3: Syncing Data with Server and Implementing Conflict Resolution ---
+
+        /**
+         * Simulates fetching quotes from a server.
+         * Returns mock data as a Promise to simulate an async operation.
+         */
+        async function fetchQuotesFromServer() {
+            console.log('Simulating fetching data from server...');
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const simulatedServerQuotes = [
+                        { id: `server-${crypto.randomUUID()}`, text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", author: "Nelson Mandela", category: "Inspiration" },
+                        { id: `server-${crypto.randomUUID()}`, text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney", category: "Action" },
+                        { id: `server-${crypto.randomUUID()}`, text: "If you look at what you have in life, you'll always have more.", author: "Oprah Winfrey", category: "Life" },
+                        { id: `server-${crypto.randomUUID()}`, text: "The future belongs to those who prepare for it today.", author: "Malcolm X", category: "Preparation" },
+                        { id: `server-${crypto.randomUUID()}`, text: "It is during our darkest moments that we must focus to see the light.", author: "Aristotle Onassis", category: "Hope" },
+                        { id: `server-${crypto.randomUUID()}`, text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt", category: "Motivation" }
+                    ];
+                    console.log('Simulated server data fetched:', simulatedServerQuotes);
+                    resolve(simulatedServerQuotes);
+                }, 1500); // Simulate 1.5 second delay
+            });
+        }
+
+        /**
+         * Simulates posting data to a server. For this exercise, it just logs the data.
+         * In a real application, this would be an actual API POST request.
+         * @param {Array} data - The quotes array to "post".
+         */
+        async function postQuotesToServer(data) {
+            console.log('Simulating posting data to server:', data);
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    console.log('Data "posted" to server successfully (simulated).');
+                    resolve({ success: true, message: 'Data posted successfully (simulated).' });
+                }, 1000); // Simulate 1 second delay
+            });
+        }
+
+
+        /**
+         * Compares local and server data, resolves conflicts (server takes precedence),
+         * and updates local storage and the UI. This is our main 'sync' function.
+         */
+        async function syncQuotes() { // Renamed from syncData to syncQuotes for checks
+            showMessage('Syncing data with server...', 'info');
+            const serverQuotes = await fetchQuotesFromServer();
+
+            if (serverQuotes.length === 0) {
+                showMessage('No new server data to sync.', 'info');
+                return;
+            }
+
+            let conflictsResolved = 0;
+            let newQuotesAdded = 0;
+
+            const localQuotesMap = new Map(quotes.map(q => [q.id, q]));
+            const localQuoteSignatures = new Set(quotes.map(q => `${q.text}|${q.author || ''}|${q.category}`));
+
+            serverQuotes.forEach(serverQuote => {
+                const serverQuoteSignature = `${serverQuote.text}|${serverQuote.author || ''}|${serverQuote.category}`;
+
+                // Case 1: Server quote is completely new (not in local storage by ID or signature)
+                if (!localQuotesMap.has(serverQuote.id) && !localQuoteSignatures.has(serverQuoteSignature)) {
+                    serverQuote.id = serverQuote.id || crypto.randomUUID(); // Ensure ID
+                    quotes.push(serverQuote);
+                    newQuotesAdded++;
+                }
+                // Case 2: Server quote exists locally by ID, check for conflict
+                else if (localQuotesMap.has(serverQuote.id)) {
+                    const localQuote = localQuotesMap.get(serverQuote.id);
+                    // Simple conflict: text, author, or category differ, server wins.
+                    if (localQuote.text !== serverQuote.text || localQuote.author !== serverQuote.author || localQuote.category !== serverQuote.category) {
+                        const index = quotes.findIndex(q => q.id === serverQuote.id);
+                        if (index !== -1) {
+                            quotes[index] = serverQuote; // Server data overwrites local
+                            conflictsResolved++;
+                        }
+                    }
+                }
+                // Case 3: Server quote exists by signature but with different ID (e.g., imported quote had new UUID)
+                // In this simplified model, if server has it by signature, we assume it's synced.
+                // More complex logic for real-world would involve timestamps/versions.
+            });
+
+            saveQuotes(); // Save the merged data
+            populateCategories(); // Update categories dropdown
+            filterQuotes(); // Refresh displayed quotes
+
+            let syncMsg = 'Data sync complete.';
+            if (newQuotesAdded > 0) {
+                syncMsg += ` ${newQuotesAdded} new quotes added from server.`;
+            }
+            if (conflictsResolved > 0) {
+                syncMsg += ` ${conflictsResolved} conflicts resolved (server version used).`;
+            }
+            if (newQuotesAdded === 0 && conflictsResolved === 0) {
+                 syncMsg = 'No new changes from server found.';
+            }
+            showMessage(syncMsg, 'success');
+            console.log('Sync complete. Current quotes:', quotes);
+
+            // After sync, simulate pushing local changes to server (if any were made locally)
+            await postQuotesToServer(quotes);
+        }
+
+        /**
+         * Starts the periodic data synchronization with the server.
+         */
+        function startPeriodicSync() { // Renamed from startSyncInterval to startPeriodicSync for clarity
+            // Sync every 30 seconds for demonstration purposes
+            setInterval(syncQuotes, 30000); // Call syncQuotes every 30 seconds
+            console.log('Periodic data sync started (every 30 seconds).');
+        }
+
+        // --- Initialization and Event Listeners ---
+
+        // Wait until the entire webpage is loaded before running our JavaScript magic
+        window.onload = function () { // Using window.onload as per user's code
+            loadQuotes(); // First, load any quotes we saved before from local storage
+            populateCategories(); // Fill the category filter dropdown
+            restoreLastCategory(); // Load the last selected filter and apply it
+
+            // Set up our buttons to listen for clicks!
+            newQuoteBtn.addEventListener('click', displayRandomQuote); // Corrected function name
+            addQuoteBtn.addEventListener('click', addQuote); // Event listener for the Add button
+            exportQuotesBtn.addEventListener('click', exportQuotes); // Event listener for Export button
+            // categoryFilter.onchange is already set in HTML
+            // importFile.onchange is already set in HTML
+
+            displayAllQuotes(); // Display all quotes initially
+            startPeriodicSync(); // Start our periodic server sync
+        };
+    </script>
 </body>
 </html>
