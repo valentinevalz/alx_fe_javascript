@@ -20,14 +20,14 @@
 
   <!-- Filter By Category -->
   <h2>Filter by Category</h2>
-  <select id="categoryFilter" onchange="filterQuotes()">
+  <select id="categoryFilter" onchange="filterQuote()">
     <option value="all">All Categories</option>
   </select>
 
   <!-- Import / Export JSON -->
   <h2>Import / Export Quotes</h2>
   <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-  <button onclick="exportQuotes()">📤 Export Quotes</button>
+  <button onclick="exportToJsonFile()">📤 Export Quotes</button>
 
   <script src="script.js"></script>
 </body>
