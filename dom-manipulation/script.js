@@ -16,9 +16,9 @@ window.onload = function () {
 };
 
 // ---------------------
-// SHOW RANDOM QUOTE
+// DISPLAY RANDOM QUOTE
 // ---------------------
-function showRandomQuote() {
+function displayRandomQuote() {
   const selected = document.getElementById("categoryFilter").value;
   const filtered = selected === "all" ? quotes : quotes.filter(q => q.category === selected);
 
@@ -31,7 +31,7 @@ function showRandomQuote() {
   document.getElementById('quoteDisplay').innerText = `${random.text} (${random.category})`;
 }
 
-document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+document.getElementById("newQuote").addEventListener("click", displayRandomQuote);
 
 // ---------------------
 // ADD NEW QUOTE
@@ -44,6 +44,7 @@ function addQuote() {
     quotes.push({ text, category });
     saveQuotes();
     populateCategories();
+    displayRandomQuote(); // Update DOM with new quote
     alert("✅ Quote added!");
   } else {
     alert("❌ Please enter both quote and category.");
@@ -89,7 +90,7 @@ function populateCategories() {
 function filterQuotes() {
   const selected = document.getElementById("categoryFilter").value;
   localStorage.setItem("lastCategory", selected);
-  showRandomQuote();
+  displayRandomQuote(); // Use corrected function name
 }
 
 // ---------------------
@@ -99,7 +100,7 @@ function restoreLastCategory() {
   const last = localStorage.getItem("lastCategory");
   if (last) {
     document.getElementById("categoryFilter").value = last;
-    showRandomQuote();
+    displayRandomQuote(); // Use corrected function name
   }
 }
 
@@ -127,6 +128,7 @@ function importFromJsonFile(event) {
         quotes.push(...importedQuotes);
         saveQuotes();
         populateCategories();
+        displayRandomQuote(); // Refresh display
         alert("✅ Quotes imported successfully!");
       } else {
         alert("❌ Invalid JSON format.");
