@@ -13,7 +13,7 @@ window.onload = function () {
   loadQuotes();
   populateCategories();
   restoreLastCategory();
-  syncQuotes(); // optional immediate sync
+  syncQuotes(); // Immediate sync on load
 };
 
 // ---------------------
@@ -52,7 +52,7 @@ function addQuote() {
     saveQuotes();
     populateCategories();
     displayRandomQuote();
-    postQuoteToServer(newQuote); // Simulate push to server
+    postQuoteToServer(newQuote); // ✅ Simulate POST to server
     alert("✅ Quote added!");
   } else {
     alert("❌ Please enter both quote and category.");
@@ -149,12 +149,13 @@ function importFromJsonFile(event) {
 }
 
 // ---------------------
-// SYNC WITH MOCK SERVER
+// FETCH QUOTES FROM MOCK SERVER
 // ---------------------
 function fetchQuotesFromServer() {
   return fetch("https://jsonplaceholder.typicode.com/posts")
-    .then(res => res.json())
+    .then(response => response.json())
     .then(data => {
+      // Convert to quote format
       return data.slice(0, 5).map(post => ({
         text: post.title,
         category: "server"
@@ -162,6 +163,26 @@ function fetchQuotesFromServer() {
     });
 }
 
+// ---------------------
+// POST QUOTE TO SERVER (MOCK)
+// ---------------------
+function postQuoteToServer(quote) {
+  fetch("https://jsonplaceholder.typicode.com/posts", {
+    method: "POST",
+    body: JSON.stringify(quote),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log("📤 Posted quote to server (mock):", data);
+    });
+}
+
+// ---------------------
+// SYNC QUOTES WITH SERVER
+// ---------------------
 function syncQuotes() {
   fetchQuotesFromServer().then(serverQuotes => {
     let newQuotes = 0;
@@ -177,24 +198,10 @@ function syncQuotes() {
     if (newQuotes > 0) {
       saveQuotes();
       populateCategories();
-      alert(`🔄 Synced with server! ${newQuotes} new quote(s) added.`);
+      alert(`🔄 Synced ${newQuotes} new quote(s) from server.`);
     }
   });
 }
 
-// Periodic server sync every 30 seconds
+// Periodic sync every 30 seconds
 setInterval(syncQuotes, 30000);
-
-// ---------------------
-// POST SIMULATION
-// ---------------------
-function postQuoteToServer(quote) {
-  fetch("https://jsonplaceholder.typicode.com/posts", {
-    method: "POST",
-    body: JSON.stringify(quote),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  }).then(res => res.json())
-    .then(data => console.log("🛰️ Posted to server:", data));
-}
